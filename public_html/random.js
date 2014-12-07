@@ -1,5 +1,94 @@
+    var lines=[];
+    var weights=[];
+    var selected=[];
+
 function draw(n,rep){
-    var Edge = function(source, sink, capacity) {
+    var cvs=document.getElementsByTagName('canvas')[0];   
+            /** 
+             * @type CanvasRenderingContext2D 
+             **/
+    var ctx=cvs.getContext('2d');
+    
+    
+            ctx.beginPath();
+            var randomX;
+            var randomY;
+            
+            ctx.lineWidth=3;
+            ctx.font  = '5'+' Arial';            
+            var lastRandomx=Math.random()*200;
+            var lastRandomy=Math.random()*200;
+            lines.push({              // store point to create a poly-line
+                    x: lastRandomx,
+                    y: lastRandomy
+                  });
+            for (var i = 0; i <n ; i++) {
+                var cwidth = cvs.width;
+		var cheight = cvs.height;                
+                randomX = Math.random()*cwidth*2/3;
+		randomY = Math.random()*cheight*2/3;
+                		
+                ctx.fillRect(randomX,randomY,5,5);		
+		ctx.moveTo(lastRandomx,lastRandomy);
+		ctx.lineTo(randomX,randomY); 
+                weights.push(Math.round(Math.random()*20)+1); 
+                var p1={x:lastRandomx,y:lastRandomy};
+                var p2={x:randomX,y:randomY};
+               //var p1 = {x:200,y:200};
+                //var p2 = {x:400,y:300};	
+                drawLabel(ctx,weights[i].toString(),p1,p2,'center',10);	
+                lastRandomx=randomX;
+                lastRandomy=randomY;
+                lines.push({              // store point to create a poly-line
+                    x: randomX,
+                    y: randomY
+                  });
+                
+            }
+            for (var i = 0; i < rep; i++) {
+                var rand=Math.round(rep*Math.random());
+                ctx.lineTo(lines[rand].x,lines[rand].y);
+                 lines.push({              // store point to create a poly-line
+                    x: lines[rand].x,
+                    y: lines[rand].y
+                  });
+                  weights.push(Math.round(Math.random()*20)+1); 
+                p2={x:lines[rand].x,y:lines[rand].y};
+                p1={x:lastRandomx,y:lastRandomy};               	
+                drawLabel(ctx,weights[n+i].toString(),p1,p2,'center',10);
+                lastRandomx=lines[rand].x;
+                lastRandomy=lines[rand].y;
+            }             
+            ctx.stroke();
+            
+             cvs.addEventListener('click',
+                            function(e) {
+
+                var r = cvs.getBoundingClientRect(), // adjust to proper mouse position
+                    x = e.clientX - r.left,
+                    y = e.clientY - r.top,
+                    i = 0;
+
+                // for each line segment, build segment to path and check
+                for(var m=lines.length; i < m - 1; i++) {
+                  ctx.beginPath();                        // new segment
+                  ctx.moveTo(lines[i].x, lines[i].y);     // start is current point
+                  ctx.lineTo(lines[i+1].x, lines[i+1].y); // end point is next
+                  if (ctx.isPointInStroke(x, y)) {        // x,y is on line?
+                    selected.push(lines[i]);
+                    selected.push(lines[i+1]);
+                    ctx.strokeStyle = "red";              // stroke red for demo
+                    ctx.stroke();
+                    break;
+                  }
+                }
+              });
+              
+        
+              //document.write(weights.length+"<br>"+lines.length);
+    }; 
+    
+     var Edge = function(source, sink, capacity) {
         this.source = source;
         this.sink = sink;
         this.capacity = capacity;
@@ -56,88 +145,6 @@ function draw(n,rep){
         }
         return result;
     };
-
-        var cvs=document.getElementsByTagName('canvas')[0];   
-            /** 
-             * @type CanvasRenderingContext2D 
-             **/
-    var ctx=cvs.getContext('2d');
-    
-    var lines=[];
-            
-            ctx.beginPath();
-            var randomX;
-            var randomY;
-            
-            ctx.lineWidth=3;
-            ctx.font  = '5'+' Arial';
-            var weights=[];
-            var lastRandomx=Math.random()*200;
-            var lastRandomy=Math.random()*200;
-            lines.push({              // store point to create a poly-line
-                    x: lastRandomx,
-                    y: lastRandomy
-                  });
-            for (var i = 0; i <n ; i++) {
-                var cwidth = cvs.width;
-		var cheight = cvs.height;                
-                randomX = Math.random()*cwidth*2/3;
-		randomY = Math.random()*cheight*2/3;
-                		
-                ctx.fillRect(randomX,randomY,5,5);		
-		ctx.moveTo(lastRandomx,lastRandomy);
-		ctx.lineTo(randomX,randomY); 
-                weights.push(Math.round(Math.random()*20)); 
-                var p1={x:lastRandomx,y:lastRandomy};
-                var p2={x:randomX,y:randomY};
-               //var p1 = {x:200,y:200};
-                //var p2 = {x:400,y:300};	
-                drawLabel(ctx,weights[i].toString(),p1,p2,'center',10);	
-                lastRandomx=randomX;
-                lastRandomy=randomY;
-                lines.push({              // store point to create a poly-line
-                    x: randomX,
-                    y: randomY
-                  });
-                
-            }
-            for (var i = 0; i < rep; i++) {
-                var rand=Math.round(rep*Math.random());
-                ctx.lineTo(lines[rand].x,lines[rand].y);
-                 lines.push({              // store point to create a poly-line
-                    x: lines[rand].x,
-                    y: lines[rand].y
-                  });
-                  weights.push(Math.round(Math.random()*20)); 
-                p2={x:lines[rand].x,y:lines[rand].y};
-                p1={x:lastRandomx,y:lastRandomy};               	
-                drawLabel(ctx,weights[n+i].toString(),p1,p2,'center',10);
-                lastRandomx=lines[rand].x;
-                lastRandomy=lines[rand].y;
-            }             
-            ctx.stroke();
-            
-             cvs.addEventListener('click',
-                            function(e) {
-
-                var r = cvs.getBoundingClientRect(), // adjust to proper mouse position
-                    x = e.clientX - r.left,
-                    y = e.clientY - r.top,
-                    i = 0;
-
-                // for each line segment, build segment to path and check
-                for(var m=lines.length; i < m - 1; i++) {
-                  ctx.beginPath();                        // new segment
-                  ctx.moveTo(lines[i].x, lines[i].y);     // start is current point
-                  ctx.lineTo(lines[i+1].x, lines[i+1].y); // end point is next
-                  if (ctx.isPointInStroke(x, y)) {        // x,y is on line?
-                    ctx.strokeStyle = "red";              // stroke red for demo
-                    ctx.stroke();
-                    break;
-                  }
-                }
-              });
-    };  
    
 function drawLabel( ctx, text, p1, p2, alignment, padding ){
                 ctx.fillStyle='red';
@@ -181,8 +188,48 @@ function drawLabel( ctx, text, p1, p2, alignment, padding ){
 		ctx.rotate(angle);
 		ctx.fillText(textToDraw,0,0);
 		ctx.restore();                
-	};
+};
         
+function inArray(array, el) {
+  for ( var i = array.length; i--; ) {
+    if ( array[i] === el ) return true;
+  }
+  return false;
+};
 
+function isEqArrays(arr1, arr2) {
+  if ( arr1.length !== arr2.length ) {
+    return false;
+  }
+  for ( var i = arr1.length; i--; ) {
+    if ( !inArray( arr2, arr1[i] ) ) {
+      return false;
+    }
+  }
+  return true;
+};
+
+function clickMe(){
+    
+    var g = new Graph();
+        for (var i = 0, max = lines.length; i < max; i++) {
+            g.addNode(lines[i]);
+        }
+        
+        for (var i = 0, max = weights.length; i < max; i++) {
+            g.addEdge(lines[i],lines[i+1],weights[i]);
+        }
+        
+        var result=Prim(g);
+        document.getElementById("p1").innerHTML = "Trying...";
+        selected=selected.filter( function( item, index, inputArray ) {
+            return inputArray.indexOf(item) ===index;
+        });        
+        if (isEqArrays(result,selected)) {
+            document.getElementById("p1").innerHTML = "Success";
+        }else{
+             document.getElementById("p1").innerHTML = "Failed";
+        }
+}
         
 window.addEventListener('load',function(){ draw(7,3); },false);
