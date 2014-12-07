@@ -1,15 +1,23 @@
     var lines=[];
     var weights=[];
     var selected=[];
-
+    var s="";
+    var id=3;
+    var repet=1;
 function draw(n,rep){
     var cvs=document.getElementsByTagName('canvas')[0];   
             /** 
              * @type CanvasRenderingContext2D 
              **/
     var ctx=cvs.getContext('2d');
-    
-    
+    var cwidth = cvs.width;
+    var cheight = cvs.height; 
+    ctx.clearRect ( 0 , 0 , cwidth, cheight );
+    lines.length=0;
+    weights.length=0;
+    selected.length=0;
+    //document.getElementById("p1").innerHTML = "Try";
+            ctx.strokeStyle='black';
             ctx.beginPath();
             var randomX;
             var randomY;
@@ -22,11 +30,9 @@ function draw(n,rep){
                     x: lastRandomx,
                     y: lastRandomy
                   });
-            for (var i = 0; i <n ; i++) {
-                var cwidth = cvs.width;
-		var cheight = cvs.height;                
-                randomX = Math.random()*cwidth*2/3;
-		randomY = Math.random()*cheight*2/3;
+            for (var i = 0; i <n ; i++) {                               
+                randomX = Math.random()*cwidth;
+		randomY = Math.random()*cheight;
                 		
                 ctx.fillRect(randomX,randomY,5,5);		
 		ctx.moveTo(lastRandomx,lastRandomy);
@@ -36,7 +42,7 @@ function draw(n,rep){
                 var p2={x:randomX,y:randomY};
                //var p1 = {x:200,y:200};
                 //var p2 = {x:400,y:300};	
-                drawLabel(ctx,weights[i].toString(),p1,p2,'center',10);	
+                drawLabel(ctx,weights[i].toString(),p1,p2,'center',0);	
                 lastRandomx=randomX;
                 lastRandomy=randomY;
                 lines.push({              // store point to create a poly-line
@@ -61,6 +67,8 @@ function draw(n,rep){
             }             
             ctx.stroke();
             
+            
+            
              cvs.addEventListener('click',
                             function(e) {
 
@@ -77,14 +85,20 @@ function draw(n,rep){
                   if (ctx.isPointInStroke(x, y)) {        // x,y is on line?
                     selected.push(lines[i]);
                     selected.push(lines[i+1]);
-                    ctx.strokeStyle = "red";              // stroke red for demo
+                    ctx.strokeStyle = "green";              // stroke red for demo
                     ctx.stroke();
                     break;
                   }
                 }
               });
               
-        
+        for (var i = 0, max = lines.length; i < max; i++) {
+        lines[i].toString=function()
+                    {
+                        return "("+this.x+","+this.y+")";
+                    };
+                    //s+=lines[i].toString()+" ";
+        }
               //document.write(weights.length+"<br>"+lines.length);
     }; 
     
@@ -121,28 +135,35 @@ function draw(n,rep){
                     return null;
                 };
     };
-
-    function Prim(graph) {
+ 
+    function Prim(g) {
         var result = [];
-        var usedNodes = {};
-        function findMin(g) {
+        var usedNodes = {};        
+        function findMin(g) { 
             var min = [999999,null];
             for(var i=0;i<result.length;i++)
-                for(var n=0;n<g.edges[result[i]].length;n++)
-                    if(g.edges[result[i]][n].capacity < min[0] && usedNodes[g.edges[result[i]][n].sink] === undefined)
+                for(var n=0;n<g.edges[result[i]].length;n++){
+                    
+                    
+                    if(g.edges[result[i]][n].capacity < min[0] && usedNodes[g.edges[result[i]][n].sink.toString()] === undefined){
                         min = [g.edges[result[i]][n].capacity, g.edges[result[i]][n].sink];
+                    }}
             return min[1];
-        }
+        };        
         // Pick random start point
-        var node = g.nodes[Math.round(Math.random()*(g.nodes.length-1))];
-        result.push(node);
-        usedNodes[node] = true;
-        var min = findMin(g);
+        var node = g.nodes[Math.round(Math.random()*(g.nodes.length-1))];          
+        result.push(node);  
+       
+       
+        usedNodes[node.toString()] = true; 
+        //s+="xxx"+node.toString()+" ";
+        var min = findMin(g);        
+        //document.getElementById("p1").innerHTML +=min+" <br>";
         while(min !==null) {
             result.push(min);
             usedNodes[min] = true;
             min = findMin(g);
-        }
+        }        
         return result;
     };
    
@@ -212,24 +233,68 @@ function isEqArrays(arr1, arr2) {
 function clickMe(){
     
     var g = new Graph();
+        
         for (var i = 0, max = lines.length; i < max; i++) {
             g.addNode(lines[i]);
         }
         
         for (var i = 0, max = weights.length; i < max; i++) {
+            
             g.addEdge(lines[i],lines[i+1],weights[i]);
         }
         
         var result=Prim(g);
-        document.getElementById("p1").innerHTML = "Trying...";
-        selected=selected.filter( function( item, index, inputArray ) {
+        
+        /*selected=selected.filter( function( item, index, inputArray ) {
             return inputArray.indexOf(item) ===index;
-        });        
+        });*/
+    removeDuplicates(selected,thingsEqual);
+        /*for (var i = 0, max = selected.length; i < max; i++) {
+        s+=selected[i].x+","+selected[i].y+" ";
+    }*/
+        //document.getElementById("p1").innerHTML +=s+ "result:"+result.length+"<br>"+"selected:"+selected.length;
         if (isEqArrays(result,selected)) {
-            document.getElementById("p1").innerHTML = "Success";
+           document.getElementById("p1").innerHTML = "Success";
+           id++;
+           if (repet%3===0) {
+            repet++;
+            }
+            draw(id,repet);
         }else{
              document.getElementById("p1").innerHTML = "Failed";
         }
 }
-        
-window.addEventListener('load',function(){ draw(7,3); },false);
+
+function reset(){
+    
+    draw(id,repet);
+}
+function arrayContains(arr, val, equals) {
+    var i = arr.length;
+    while (i--) {
+        if ( equals(arr[i], val) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function removeDuplicates(arr, equals) {
+    var originalArr = arr.slice(0);
+    var i, len, j, val;
+    arr.length = 0;
+
+    for (i = 0, len = originalArr.length; i < len; ++i) {
+        val = originalArr[i];
+        if (!arrayContains(arr, val, equals)) {
+            arr.push(val);
+        }
+    }
+}
+
+function thingsEqual(thing1, thing2) {
+    return thing1.x === thing2.x
+        && thing1.y === thing2.y;
+}
+
+window.addEventListener('load',function(){ draw(id,repet); },false);
