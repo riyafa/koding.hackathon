@@ -3,9 +3,10 @@
     var selected=[];
     var s="";
     var id=3;
-    var repet=1;
+    var repet=1,num=0;
 function draw(n,rep){
-    var cvs=document.getElementsByTagName('canvas')[0];   
+    var cvs=document.getElementsByTagName('canvas')[0];  
+	cvs.width = window.innerWidth-100; 
             /** 
              * @type CanvasRenderingContext2D 
              **/
@@ -23,7 +24,7 @@ function draw(n,rep){
             var randomY;
             
             ctx.lineWidth=3;
-            ctx.font  = '5'+' Arial';            
+            ctx.font  = "normal bold 1em Arial";            
             var lastRandomx=Math.random()*200;
             var lastRandomy=Math.random()*200;
             lines.push({              // store point to create a poly-line
@@ -83,6 +84,8 @@ function draw(n,rep){
                   ctx.moveTo(lines[i].x, lines[i].y);     // start is current point
                   ctx.lineTo(lines[i+1].x, lines[i+1].y); // end point is next
                   if (ctx.isPointInStroke(x, y)) {        // x,y is on line?
+                      if(selected.length===0)
+                          num=i;
                     selected.push(lines[i]);
                     selected.push(lines[i+1]);
                     ctx.strokeStyle = "green";              // stroke red for demo
@@ -151,7 +154,7 @@ function draw(n,rep){
             return min[1];
         };        
         // Pick random start point
-        var node = g.nodes[Math.round(Math.random()*(g.nodes.length-1))];          
+        var node = g.nodes[num];          
         result.push(node);  
        
        
